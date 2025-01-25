@@ -3,6 +3,12 @@ import {join} from "node:path";
 import database from "infra/database.js";
 
 export default async function migrations(request, response) {
+	const method = request.method;
+
+	const allowedMethods = ["GET", "POST"];
+
+	if (!allowedMethods.includes(method)) return response.status(405).end();
+
 	const dbClient = await database.getNewClient();
 
 	const defaultMigrationOptions = {
@@ -15,13 +21,11 @@ export default async function migrations(request, response) {
 		migrationsTable: "pgmigrations",
 	};
 
-	if (request.method === "GET") {
+	if (method === "GET") {
 		const pendingMigrations = await migrationRunner(defaultMigrationOptions);
 		await dbClient.end();
 		return response.status(200).json(pendingMigrations);
-	}
-
-	if (request.method === "POST") {
+	} else if (method === "POST") {
 		let statusCode = 200;
 
 		const migratedMigrations = await migrationRunner({
@@ -37,6 +41,4 @@ export default async function migrations(request, response) {
 
 		return response.status(statusCode).json(migratedMigrations);
 	}
-
-	return response.status(405).end();
 }
