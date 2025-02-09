@@ -18,7 +18,7 @@ async function waitForAllServices() {
 		}
 	}
 }
-//Comentário só para criar o pull request e fazer o amend
+
 export default {
 	waitForAllServices,
 };
