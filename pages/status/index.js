@@ -43,24 +43,29 @@ function DatabaseStatus() {
     refreshInterval: 2000,
   });
 
-  if (isLoading && !data) {
-    return "Carregando ...";
-  }
+  let databaseInformation = "Carregando ...";
 
-  const database = data.dependencies.database;
+  if (!isLoading && data) {
+    const database = data.dependencies.database;
+    databaseInformation = (
+      <>
+        <p>
+          <strong>Versão</strong>: {database.version}
+        </p>
+        <p>
+          <strong>Máximo de conexões</strong>: {database.max_connections}
+        </p>
+        <p>
+          <strong>Conexões abertas</strong>: {database.opened_connections}
+        </p>
+      </>
+    );
+  }
 
   return (
     <>
       <h3>Banco de dados</h3>
-      <p>
-        <strong>Versão</strong>: {database.version}
-      </p>
-      <p>
-        <strong>Máximo de conexões</strong>: {database.max_connections}
-      </p>
-      <p>
-        <strong>Conexões abertas</strong>: {database.opened_connections}
-      </p>
+      <div>{databaseInformation}</div>
     </>
   );
 }
