@@ -44,11 +44,12 @@ function Database() {
 
   return (
     <>
+      <h3>Banco de dados</h3>
       <p>
         <strong>Versão</strong>: {database.version}
       </p>
       <p>
-        <strong>Máximo de conexões</strong>: {database.version}
+        <strong>Máximo de conexões</strong>: {database.max_connections}
       </p>
       <p>
         <strong>Conexões abertas</strong>: {database.opened_connections}
