@@ -17,10 +17,10 @@ function onError(error, request, response) {
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-const controler = {
+const controller = {
   errorHandlers: {
     onError,
     onNoMatch,
   },
 };
-export default controler;
+export default controller;
