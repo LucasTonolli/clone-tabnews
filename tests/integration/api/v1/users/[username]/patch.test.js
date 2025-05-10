@@ -11,16 +11,6 @@ beforeAll(async () => {
 
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
-    let args = {
-      url: "http://localhost:3000/api/v1/users",
-      options: {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    };
-
     test("With nonexistent 'username'", async () => {
       const patchUserResponse = await fetch(
         "http://localhost:3000/api/v1/users/usuarioInexistente",
@@ -40,26 +30,16 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With duplicated 'username'", async () => {
-      args.options.body = JSON.stringify({
+      await orchestrator.createUser({
         username: "user1",
-        email: "user1@dev.com",
-        password: "123",
       });
 
-      const user1Response = await fetch(args.url, args.options);
-      expect(user1Response.status).toBe(201);
-
-      args.options.body = JSON.stringify({
+      const createdUser = await orchestrator.createUser({
         username: "user2",
-        email: "user2@dev.com",
-        password: "123",
       });
-
-      const user2Response = await fetch(args.url, args.options);
-      expect(user2Response.status).toBe(201);
 
       const patchResponse = await fetch(
-        "http://localhost:3000/api/v1/users/user2",
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -84,26 +64,16 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With duplicated 'email'", async () => {
-      args.options.body = JSON.stringify({
-        username: "email1",
+      await orchestrator.createUser({
         email: "email1@dev.com",
-        password: "123",
       });
 
-      const user1Response = await fetch(args.url, args.options);
-      expect(user1Response.status).toBe(201);
-
-      args.options.body = JSON.stringify({
-        username: "email2",
+      const createdUser = await orchestrator.createUser({
         email: "email2@dev.com",
-        password: "123",
       });
-
-      const user2Response = await fetch(args.url, args.options);
-      expect(user2Response.status).toBe(201);
 
       const patchResponse = await fetch(
-        "http://localhost:3000/api/v1/users/email2",
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -128,17 +98,12 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With unique 'username'", async () => {
-      args.options.body = JSON.stringify({
+      const createdUser = await orchestrator.createUser({
         username: "userunique",
-        email: "userunique@dev.com",
-        password: "123",
       });
 
-      const user1Response = await fetch(args.url, args.options);
-      expect(user1Response.status).toBe(201);
-
       const patchResponse = await fetch(
-        "http://localhost:3000/api/v1/users/userunique",
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -157,7 +122,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(patchResponseBody).toEqual({
         id: patchResponseBody.id,
         username: "userunique2",
-        email: "userunique@dev.com",
+        email: createdUser.email,
         password: patchResponseBody.password,
         created_at: patchResponseBody.created_at,
         updated_at: patchResponseBody.updated_at,
@@ -172,17 +137,12 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With unique 'email'", async () => {
-      args.options.body = JSON.stringify({
-        username: "useruniqueemail",
+      const createdUser = await orchestrator.createUser({
         email: "useruniqueemail@dev.com",
-        password: "123",
       });
 
-      const user1Response = await fetch(args.url, args.options);
-      expect(user1Response.status).toBe(201);
-
       const patchResponse = await fetch(
-        "http://localhost:3000/api/v1/users/useruniqueemail",
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -200,7 +160,7 @@ describe("PATCH /api/v1/users/[username]", () => {
 
       expect(patchResponseBody).toEqual({
         id: patchResponseBody.id,
-        username: "useruniqueemail",
+        username: createdUser.username,
         email: "useruniqueemail2@dev.com",
         password: patchResponseBody.password,
         created_at: patchResponseBody.created_at,
@@ -216,17 +176,12 @@ describe("PATCH /api/v1/users/[username]", () => {
     });
 
     test("With new 'password'", async () => {
-      args.options.body = JSON.stringify({
-        username: "usernewpass",
-        email: "usernewpass@dev.com",
+      const createdUser = await orchestrator.createUser({
         password: "123",
       });
 
-      const user1Response = await fetch(args.url, args.options);
-      expect(user1Response.status).toBe(201);
-
       const patchResponse = await fetch(
-        "http://localhost:3000/api/v1/users/usernewpass",
+        `http://localhost:3000/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           body: JSON.stringify({
@@ -244,8 +199,8 @@ describe("PATCH /api/v1/users/[username]", () => {
 
       expect(patchResponseBody).toEqual({
         id: patchResponseBody.id,
-        username: "usernewpass",
-        email: "usernewpass@dev.com",
+        username: createdUser.username,
+        email: createdUser.email,
         password: patchResponseBody.password,
         created_at: patchResponseBody.created_at,
         updated_at: patchResponseBody.updated_at,
@@ -258,7 +213,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         true,
       );
 
-      const userInDatabase = await user.findOneByUsername("usernewpass");
+      const userInDatabase = await user.findOneByUsername(createdUser.username);
       const correctPasswordMatch = await password.compare(
         "123456",
         userInDatabase.password,
